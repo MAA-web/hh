@@ -1,0 +1,113 @@
+COMMANDS
+
+R2#copy run start (save memory to nvram)
+
+VLAN:
+switch#show vlan
+switch(config)#interface fastethernet 0/1
+switch(config-if)#switchport mode access
+switch(config-if)#switchport access vlan 10
+
+switch(config)#interface fastethernet 0/0
+switch(config-if)#switchport mode trunk
+
+switch(config)#interface vlan 10
+switch(config-if)#ip address 192.168.10.1 255.255.255.0
+switch(config-if)#no shutdown
+switch(config-if)#exit
+
+RIP:
+
+R2#show ip route (show rip configs)
+
+R3(config)#router rip
+
+R3(config)#router rip
+R3(config-router)#version 2
+
+R3(config-router)#network 192.168.4.0
+R3(config-router)#network 192.168.5.0
+R3(config-router)#passive-interface fastethernet 0/0 (not allow rip to send data on this interface)
+R3(config-router)#end
+
+R1#debug ip rip (check if rip is working)
+
+R1#undebug all
+
+OSPF:
+
+R1(config)#router ospf 1
+R1(config-router)#network 192.168.1.0 0.0.0.255 area 0 (ip address -1 if present then -2 and subnet mask ulta wildcard)
+
+
+R3#show ip protocols
+R3#show ip ospf
+R3#show ip route
+
+R1(config)#router ospf 1
+R1(config-router)#router-id 10.4.4.4
+
+R1#show interfaces serial0/0/0
+
+R1(config)#interface serial0/0/0
+R1(config-if)#bandwidth 64
+
+R1(config-router)#auto-cost reference-bandwidth 10000
+
+ACL:
+Router(config)# access-list 10 permit 192.168.1.0 0.0.0.255 (for whole subnet)
+Router(config)# access-list 10 permit host 192.168.10.10 (for single ip address)
+Router(config)# access-list 10 deny any
+Router# show access-lists
+
+Router(config)# interface gigabitEthernet 0/0
+Router(config-if)# ip access-group 10 in
+
+Router# show access-lists
+
+no access-list 10
+no ip access-group 10 in
+
+Extended ACL: 
+Router(config)# access-list 110 permit ip 192.168.10.10 0.0.0.255 10.10.10.20 0.0.0.255 (source and destination both)(subnets)
+Router(config)# access-list 10 permit ip host 192.168.1.10 host 192.168.3.2 (single ip to ip)
+Router(config)# access-list 110 deny any any
+
+NAT:
+
+Tracert 8.8.8.8
+router#show ip nat translations
+Router(config)# ip nat inside source static 192.168.20.10 200.100.50.10 (from the computer to public ip connected between routers) 
+
+Router(config)# interface gigabitEthernet 0/0
+Router(config-if)# ip nat inside
+
+Router(config)# interface gigabitEthernet 0/0
+Router(config-if)# ip nat outside
+
+
+Router(config)#ip nat pool NAT_POOL 200.100.50.10 200.100.50.20 netmask 255.255.255.0
+Router(config)#access-list 1 permit 192.168.20.0 0.0.0.255
+Router(config)#ip nat inside source list 1 pool NAT_POOL
+Router(config)#interface gigabitEthernet 0/0
+Router(config-if)#ip nat inside
+Router(config-if)#exit
+Router(config)#interface gigabitEthernet 0/1
+Router(config-if)#ip nat outside
+Router(config-if)#exit
+
+Router(config)#access-list 1 permit 192.168.1.0 0.0.0.255
+Router(config)#ip nat inside source list 1 interface gigabitEthernet 0/0 overload
+Router(config)#interface gigabitEthernet 0/1
+Router(config-if)#ip nat inside
+Router(config-if)#exit
+
+Router(config)#interface gigabitEthernet 0/0
+Router(config-if)#ip nat outside
+Router(config-if)#exit
+Router#show ip nat translations
+Router#show ip nat statistics
+
+
+//to enable ipv6 on interface
+Router(config)# ipv6 unicast-routing
